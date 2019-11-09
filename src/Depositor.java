@@ -13,6 +13,11 @@ public class Depositor {
 		myName = myName2;
 	}
 
+	public Depositor(String s,String f, String l){
+		SSN = s;
+		myName = new Name(f,l);
+	}
+
 	public Name getMyName() {
 		return myName;
 	}

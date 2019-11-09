@@ -24,9 +24,44 @@ public class Bank {
 			return null;
 			
 		}
-		public TransactionReceipt openNewAcct(TransactionTicket Ticket) {
+		public TransactionReceipt openNewAcct(TransactionTicket Ticket,String[] info,Account accInfo) {
 			TransactionReceipt openAcct = new TransactionReceipt();
+			accts[numAccts] = accInfo;
+			numAccts++;
+			openAcct = new TransactionReceipt(Ticket,true,0);
 			return openAcct;
+		}
+
+		public TransactionReceipt deleteAcct(TransactionTicket info,Bank acc, Account accInfo,  int index, int num){
+			TransactionReceipt delAcct = new TransactionReceipt();
+			String reason;
+			int tempNumAccts = numAccts;
+
+			accInfo = acc.getAccts(index);
+			double bal =  accInfo.getBalance();
+			accInfo = new Account(bal);
+
+			if(acc.getAccts(index).getBalance()<0){
+				reason = "Account has a negative balance and cannot be deleted.";
+				delAcct = new TransactionReceipt(info,false,reason);
+				return delAcct;
+			}else if(acc.getAccts(index).getBalance()>0){
+				reason = "Account has a balance, Withdraw your balance and try again.";
+				delAcct = new TransactionReceipt(info,false,reason);
+				return delAcct;
+			}else {
+				for (int i = 0; i < accts.length; i++) {
+					if (accts[i].getAccNum() == num) {
+						for (int j = i; j < accts.length - 1; j++) {
+							accts[index] = accts[tempNumAccts-1];
+						}
+						break;
+					}
+				}
+				numAccts--;
+				delAcct = new TransactionReceipt(info,true,bal);
+				return delAcct;
+			}
 		}
 		
 		public int findAcct(int reqAccount) {
@@ -40,15 +75,8 @@ public class Bank {
 			return numAccts;
 		}
 
-		private void setNumAccts(int numAccts) {
-			this.numAccts = numAccts;
-		}
-
 		public Account getAccts(int index) {
 			return accts[index];
 		}
 
-		private void setAccts(Account[] accts) {
-			this.accts = accts;
-		}
 }

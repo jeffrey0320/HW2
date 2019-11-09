@@ -23,7 +23,7 @@ public class Check {
 	}
 	
 	public Calendar newDate(String ate) throws ParseException {
-		SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 		Date date = sdf.parse(ate);
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);

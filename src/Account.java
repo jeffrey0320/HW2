@@ -1,4 +1,5 @@
 import java.util.Calendar;
+import java.util.Date;
 
 public class Account {
 	private int accNum;
@@ -19,11 +20,15 @@ public class Account {
 		balance = parseDouble;
 		myDep = myInfo;
 	}
-	
-	public double amount(Bank acc,Account bal, int index) {
-		bal = acc.getAccts(index);
-		balance =  bal.getBalance();
-		return balance;
+
+	public Account (String f, String l, String s, String t,int num){
+		accType = t;
+		myDep = new Depositor(s,f,l);
+		accNum = num;
+	}
+
+	public Account(double balance){
+		this.balance = balance;
 	}
 	
 	public TransactionReceipt getBalance(TransactionTicket info,Bank acc,Account bal,int index,boolean flag) {
@@ -74,7 +79,7 @@ public class Account {
 		}
 		else if(drawAmount > balance) 
 		{
-			String reason = "Balance has insuffienct funds.";
+			String reason = "Balance has insufficient funds.";
 			printReceipt = new TransactionReceipt(info,false,reason,balance);
 			return printReceipt;
 		}
@@ -91,11 +96,24 @@ public class Account {
 	{
 		TransactionReceipt clearedCheck = new TransactionReceipt();
 		Calendar timeNow = Calendar.getInstance();
-		Calendar check = checkInfo.getDate(); 
-		check.add(check.MONTH, 6);
-		if(check.after(timeNow)) {
+		Calendar beforeSixMonths = Calendar.getInstance();
+		beforeSixMonths.add(Calendar.MONTH, -6);
+		Calendar check = checkInfo.getDate();
+
+		Date currentTimeNow = timeNow.getTime();
+		Date sixMonths = beforeSixMonths.getTime();
+		Date checkDate = check.getTime();
+
+		if(check.before(beforeSixMonths)) {
+
 			String reason = "The date on the check is more than 6 months ago.";
-			clearedCheck = new TransactionReceipt(false,reason);
+			clearedCheck = new TransactionReceipt(info,false,reason);
+			return clearedCheck;
+		}
+		else if(check.after(timeNow)){
+			String reason = "THe date on the check is after todays date. ";
+			System.out.println("Check after today date");
+			clearedCheck = new TransactionReceipt(info,false,reason);
 			return clearedCheck;
 		}
 		else 
@@ -104,9 +122,11 @@ public class Account {
 			balance =  bal.getBalance();
 			
 			double drawAmount = checkInfo.getAmount();
+			System.out.println("enter3");
 			
 			if(drawAmount <= 0.0)
 			{
+				System.out.println("enter4");
 				String reason = "Trying to withdraw invalid amount.";
 				clearedCheck = new TransactionReceipt(info,false,reason,balance);
 				return clearedCheck;
@@ -114,18 +134,25 @@ public class Account {
 			}
 			else if(drawAmount > balance) 
 			{
-				String reason = "Balance has insuffienct funds.";
+				System.out.println("enter5");
+				String reason = "Balance has insufficient funds.";
 				clearedCheck = new TransactionReceipt(info,false,reason,balance);
 				return clearedCheck;
 			}
 			else
-			{	
+			{
+				System.out.println("enter6");
 				double newBal = balance - drawAmount;
 				bal.setBalance(newBal);
+				System.out.println("balance " + balance);
 				clearedCheck = new TransactionReceipt(info,true,balance,newBal);
 				return clearedCheck;
 			}
 		}
+	}
+	
+	public TransactionReceipt notChecking(TransactionTicket info,String reason,boolean ToF) {
+		return new TransactionReceipt(info,ToF,reason);
 	}
 	
 	public Depositor getMyDep() {
