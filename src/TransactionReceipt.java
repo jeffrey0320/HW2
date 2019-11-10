@@ -48,6 +48,14 @@ public class TransactionReceipt {
 		reasonForFailureString = reason;
 		preTransactionBalance = current;
 	}
+
+	public TransactionReceipt(TransactionTicket info, boolean flag,String reason,double preBal,double balFee){
+		Slip = info;
+		successIndicatorFlag = flag;
+		reasonForFailureString = reason;
+		preTransactionBalance = preBal;
+		postTransactionBalance = balFee;
+	}
 	
 	public TransactionReceipt(Calendar date) {
 		postTransactionMaturityDate = date;

@@ -111,43 +111,39 @@ public class Account {
 			return clearedCheck;
 		}
 		else if(check.after(timeNow)){
-			String reason = "THe date on the check is after todays date. ";
-			System.out.println("Check after today date");
+			String reason = "The date on the check is after today's date. ";
 			clearedCheck = new TransactionReceipt(info,false,reason);
 			return clearedCheck;
 		}
 		else 
 		{
-			bal = acc.getAccts(index);
-			balance =  bal.getBalance();
-			
 			double drawAmount = checkInfo.getAmount();
-			System.out.println("enter3");
-			
-			if(drawAmount <= 0.0)
-			{
-				System.out.println("enter4");
-				String reason = "Trying to withdraw invalid amount.";
-				clearedCheck = new TransactionReceipt(info,false,reason,balance);
-				return clearedCheck;
-				
-			}
-			else if(drawAmount > balance) 
-			{
-				System.out.println("enter5");
-				String reason = "Balance has insufficient funds.";
-				clearedCheck = new TransactionReceipt(info,false,reason,balance);
-				return clearedCheck;
-			}
-			else
-			{
-				System.out.println("enter6");
-				double newBal = balance - drawAmount;
-				bal.setBalance(newBal);
-				System.out.println("balance " + balance);
-				clearedCheck = new TransactionReceipt(info,true,balance,newBal);
-				return clearedCheck;
-			}
+            bal = acc.getAccts(index);
+            balance =  bal.getBalance();
+
+            if(drawAmount <= 0.0)
+            {
+                String reason = "Trying to withdraw invalid amount.";
+                clearedCheck = new TransactionReceipt(info,false,reason,balance);
+                return clearedCheck;
+
+            }
+            else if(drawAmount > balance)
+            {
+                String reason = "Balance has insufficient funds. You have been charged a $2.50 service fee. ";
+                final double fee = 2.50;
+                double newBal = balance - fee;
+                clearedCheck = new TransactionReceipt(info,false,reason,balance,newBal);
+                bal.setBalance(newBal);
+                return clearedCheck;
+            }
+            else
+            {
+                double newBal = balance - drawAmount;
+                clearedCheck = new TransactionReceipt(info,true,balance,newBal);
+                bal.setBalance(newBal);
+                return clearedCheck;
+            }
 		}
 	}
 	
