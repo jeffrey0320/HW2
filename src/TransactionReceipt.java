@@ -1,4 +1,7 @@
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class TransactionReceipt {
 	private TransactionTicket Slip;
@@ -57,8 +60,15 @@ public class TransactionReceipt {
 		postTransactionBalance = balFee;
 	}
 	
-	public TransactionReceipt(Calendar date) {
-		postTransactionMaturityDate = date;
+	public TransactionReceipt(TransactionTicket info, boolean flag,String reason,String date) throws ParseException {
+		Slip = info;
+		successIndicatorFlag = flag;
+		reasonForFailureString = reason;
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+		Date oDate = sdf.parse(date);
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(oDate);
+		postTransactionMaturityDate = cal;
 	}
 	
 	public TransactionTicket getTransactionTicket() {

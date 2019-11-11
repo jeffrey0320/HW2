@@ -6,6 +6,7 @@ public class Account {
 	private String accType;
 	private double balance;
 	private Depositor myDep;
+	private Calendar maturityDate;
 	
 	public Account() {
 		accNum = 0;
@@ -13,6 +14,10 @@ public class Account {
 		balance = 0;
 		myDep = new Depositor();
 	}
+
+	public Account(Calendar maturityDate){
+	    this.maturityDate = maturityDate;
+    }
 	
 	public Account(int parseInt, String string, double parseDouble, Depositor myInfo) {
 		accNum = parseInt;
@@ -37,12 +42,10 @@ public class Account {
 			bal = acc.getAccts(index);
 			balance =  bal.getBalance();
 			bal.setBalance(balance);
-			TransactionReceipt receipt = new TransactionReceipt(info,true,balance);
-			return receipt;
+            return new TransactionReceipt(info,true,balance);
 		}else {
 			String reason = "Account number not found.";
-			TransactionReceipt receipt = new TransactionReceipt(info,false,reason);
-			return receipt;
+            return new TransactionReceipt(info,false,reason);
 		}
 	}
 	
@@ -51,15 +54,15 @@ public class Account {
 			bal = acc.getAccts(index);
 			balance =  bal.getBalance();
 			double newBal = balance + depAmount;
+			TransactionReceipt newRec = new TransactionReceipt(info,true,balance,newBal);
 			bal.setBalance(newBal);
-			TransactionReceipt withDeposit = new TransactionReceipt(info,true,balance,newBal);
-			return withDeposit;
+			return newRec;
 		}else {
 			String reason = "Cant deposit amount less than 0";
 			bal = acc.getAccts(index);
+			TransactionReceipt newRec = new TransactionReceipt(info,false,reason,balance);
 			balance =  bal.getBalance();
-			TransactionReceipt noDeposit = new TransactionReceipt(info,false,reason,balance);
-			return noDeposit;
+            return newRec;
 		}
 	}
 	
@@ -99,10 +102,6 @@ public class Account {
 		Calendar beforeSixMonths = Calendar.getInstance();
 		beforeSixMonths.add(Calendar.MONTH, -6);
 		Calendar check = checkInfo.getDate();
-
-		Date currentTimeNow = timeNow.getTime();
-		Date sixMonths = beforeSixMonths.getTime();
-		Date checkDate = check.getTime();
 
 		if(check.before(beforeSixMonths)) {
 
@@ -155,7 +154,7 @@ public class Account {
 		return myDep;
 	}
 
-	public void setMyDep(Depositor myDep) {
+	private void setMyDep(Depositor myDep) {
 		this.myDep = myDep;
 	}
 
@@ -163,7 +162,7 @@ public class Account {
 		return accNum;
 	}
 
-	public void setAccNum(int accNum) {
+	private void setAccNum(int accNum) {
 		this.accNum = accNum;
 	}
 
@@ -171,7 +170,7 @@ public class Account {
 		return accType;
 	}
 
-	public void setAccType(String accType) {
+	private void setAccType(String accType) {
 		this.accType = accType;
 	}
 	
@@ -179,8 +178,12 @@ public class Account {
 		return balance;
 	}
 
-	public void setBalance(double balance) {
+	private void setBalance(double balance) {
 		this.balance = balance;
 	}
-	
+
+	public Calendar getMaturityDate(){
+        return maturityDate;
+    }
+
 }

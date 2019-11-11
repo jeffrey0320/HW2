@@ -27,7 +27,9 @@ public class TransactionTicket {
 		typeOfTransaction = type;
 	}
 	
-	public TransactionTicket(int term) {
+	public TransactionTicket(Calendar date, String type, int term) {
+		dateOfTransaction = date;
+		typeOfTransaction = type;
 		termOfCD = term;
 	}
 	

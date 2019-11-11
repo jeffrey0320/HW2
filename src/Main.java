@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Scanner;
 
 public class Main {
@@ -195,7 +197,7 @@ public class Main {
 		output.flush();
 	}
 	
-	public static void deposit(Bank myAcct,Scanner key,PrintWriter output) {
+	public static void deposit(Bank myAcct,Scanner key,PrintWriter output) throws ParseException {
 		
 		Account accInfo = new Account();
 		TransactionReceipt info = new TransactionReceipt();
@@ -222,40 +224,105 @@ public class Main {
 			output.println("Error: " + info.getTransactionFailureReason());
 			output.println();
 		} 
-		else 
+		else // Valid account
 		{
-			double amountToDeposit;
-			System.out.println("Enter amount to deposit: ");
+			accInfo = myAcct.getAccts(index);
+			String accType = accInfo.getAccType();		// get the Account type
+
+			double amountToDeposit;						// Amount to deposit
+			System.out.print("Enter amount to deposit: ");
 			amountToDeposit = key.nextDouble();
-			
-			if (amountToDeposit <= 0.00) { // invalid amount to deposit
-				
-				transactionDate = Calendar.getInstance();	
-				date = new TransactionTicket(transactionDate,"Deposit");
-				info = accInfo.makeDeposit(date,myAcct,accInfo,index,false,amountToDeposit);
-				
-				output.println("Transaction Requested: Deposit");
-				output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
-				output.println("Account Number: " + requestedAccount);
-				output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
-				output.printf("Amount to Deposit: $%.2f\n", amountToDeposit);
-				output.printf("Error: $%.2f is an invalid amount",
-					 amountToDeposit);
-				output.println();
-				output.println();
-			} else {
-				transactionDate = Calendar.getInstance();
-				date = new TransactionTicket(transactionDate,"Deposit");
-				info = accInfo.makeDeposit(date,myAcct,accInfo,index,true,amountToDeposit);
-				
-				output.println("Transaction Requested: Deposit");
-				output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
-				output.println("Account Number: " + requestedAccount);
-				output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
-				output.printf("Amount to Deposit: $%.2f\n", amountToDeposit);
-				output.printf("New Balance: $%.2f\n", info.getPostTransactionBalance());
-				output.println();
+
+			if(accType.equals("CD")){
+				Calendar tdyDate = Calendar.getInstance();
+
+				Check dateCon = new Check();
+
+				System.out.print("Enter account opening date: ");
+				String openDate = key.next();
+
+				System.out.print("Enter cd term: ");
+				int termOfCD = key.nextInt();
+
+				// Convert String date to Calendar
+				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+				Date oDate = sdf.parse(openDate);
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(oDate);
+				cal.add(Calendar.MONTH,termOfCD);
+
+				if(cal.before(tdyDate) || cal.equals(tdyDate)){ // Account out of term
+					if (amountToDeposit <= 0.00) { // invalid amount to deposit
+
+						transactionDate = Calendar.getInstance();
+						date = new TransactionTicket(transactionDate,"Deposit");
+						info = accInfo.makeDeposit(date,myAcct,accInfo,index,false,amountToDeposit);
+
+						output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
+						output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
+						output.println("Account type: " + accType);
+						output.println("Account Number: " + requestedAccount);
+						output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
+						output.printf("Amount to Deposit: $%.2f\n", amountToDeposit);
+						output.printf("Error: $%.2f\n is an invalid amount", amountToDeposit);
+						output.println();
+					} else { // Valid amount to deposit
+						transactionDate = Calendar.getInstance();
+						date = new TransactionTicket(transactionDate,"Deposit");
+						info = accInfo.makeDeposit(date,myAcct,accInfo,index,true,amountToDeposit);
+
+						output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
+						output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
+						output.println("Account type: " + accType);
+						output.println("Account Number: " + requestedAccount);
+						output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
+						output.printf("Amount to Deposit: $%.2f\n", amountToDeposit);
+						output.printf("New Balance: $%.2f\n", info.getPostTransactionBalance());
+						output.println();
+					}
+				}else{ // account still in term
+					transactionDate = Calendar.getInstance();
+					date = new TransactionTicket(transactionDate,"Deposit",termOfCD);
+					info = new TransactionReceipt(date,false,"Term hasn't finished",openDate);
+
+					output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
+					output.println("Account type: " + accType);
+					output.println("Account Number: " + requestedAccount);
+					output.printf("Error: " +  info.getTransactionFailureReason());
+					output.println();
+				}
+			}else{ // if not CD
+				if (amountToDeposit <= 0.00) { // invalid amount to deposit
+
+					transactionDate = Calendar.getInstance();
+					date = new TransactionTicket(transactionDate,"Deposit");
+					info = accInfo.makeDeposit(date,myAcct,accInfo,index,false,amountToDeposit);
+
+					output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
+					output.println("Account type: " + accType);
+					output.println("Account Number: " + requestedAccount);
+					output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
+					output.printf("Amount to Deposit: $%.2f\n", amountToDeposit);
+					output.printf("Error: $%.2f is an invalid amount\n", amountToDeposit);
+					output.println();
+				} else {
+					transactionDate = Calendar.getInstance();
+					date = new TransactionTicket(transactionDate,"Deposit");
+					info = accInfo.makeDeposit(date,myAcct,accInfo,index,true,amountToDeposit);
+
+					output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
+					output.println("Account type: " + accType);
+					output.println("Account Number: " + requestedAccount);
+					output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
+					output.printf("Amount to Deposit: $%.2f\n", amountToDeposit);
+					output.printf("New Balance: $%.2f\n", info.getPostTransactionBalance());
+					output.println();
+				}
 			}
+
 		}
 		output.flush();
 	}
