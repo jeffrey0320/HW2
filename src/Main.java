@@ -454,7 +454,7 @@ public class Main {
 				output.println("SSN: " + accInfo.getMyDep().getSSN());
 				output.println("Account number: " + accInfo.getAccNum());
 				output.println("Account Type: " + accInfo.getAccType());
-				output.println("Balance: $" + accInfo.getBalance());
+				output.printf("Balance: $%.2f\n" , accInfo.getBalance());
 				output.println();
 			}
 		}
