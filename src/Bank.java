@@ -18,11 +18,9 @@ public class Bank {
 			accts = acct;
 		}
 		
-		public TransactionReceipt openNewAcct(Account newAccount) {
+		public void openNewAcct(Account newAccount) {
 			accts[numAccts] = newAccount;
 			numAccts++;
-			return null;
-			
 		}
 		public TransactionReceipt openNewAcct(TransactionTicket Ticket,String[] info,Account accInfo) {
 			TransactionReceipt openAcct = new TransactionReceipt();
@@ -32,7 +30,7 @@ public class Bank {
 			return openAcct;
 		}
 
-		public TransactionReceipt deleteAcct(TransactionTicket info,Bank acc, Account accInfo,  int index, int num){
+		public TransactionReceipt deleteAcct(TransactionTicket info,Bank acc, Account accInfo, int index, int num){
 			TransactionReceipt delAcct = new TransactionReceipt();
 			String reason;
 			int tempNumAccts = numAccts;

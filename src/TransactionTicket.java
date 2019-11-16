@@ -32,7 +32,14 @@ public class TransactionTicket {
 		typeOfTransaction = type;
 		termOfCD = term;
 	}
-	
+
+	public TransactionTicket(Calendar currentDate, String deposit, double amountToDeposit, int amountOfTerm) {
+		dateOfTransaction = currentDate;
+		typeOfTransaction = deposit;
+		amountOfTransaction = amountToDeposit;
+		termOfCD = amountOfTerm;
+	}
+
 	public Calendar getDateOfTransaction() {
 		return dateOfTransaction;
 	}

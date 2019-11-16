@@ -25,6 +25,14 @@ public class TransactionReceipt {
 		preTransactionBalance = pre;
 		postTransactionBalance = post;
 	}
+
+	public TransactionReceipt(TransactionTicket info,boolean flag,double pre,double post,Calendar date) {
+		Slip = info;
+		successIndicatorFlag = flag;
+		preTransactionBalance = pre;
+		postTransactionBalance = post;
+		postTransactionMaturityDate = date;
+	}
 	//Constructor for flag and reason for faliure
 	public TransactionReceipt(boolean flag,String reason) {
 			successIndicatorFlag = flag;
@@ -60,15 +68,11 @@ public class TransactionReceipt {
 		postTransactionBalance = balFee;
 	}
 	
-	public TransactionReceipt(TransactionTicket info, boolean flag,String reason,String date) throws ParseException {
+	public TransactionReceipt(TransactionTicket info, boolean flag,String reason,Calendar date) throws ParseException {
 		Slip = info;
 		successIndicatorFlag = flag;
 		reasonForFailureString = reason;
-		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-		Date oDate = sdf.parse(date);
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(oDate);
-		postTransactionMaturityDate = cal;
+		postTransactionMaturityDate = date;
 	}
 	
 	public TransactionTicket getTransactionTicket() {

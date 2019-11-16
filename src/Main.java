@@ -16,9 +16,9 @@ public class Main {
 	char choice;
 	boolean not_done = true;
 
-	//File testFile = new File("testCases.txt");
-	//Scanner Key = new Scanner(testFile);
-	Scanner Key = new Scanner(System.in);
+	File testFile = new File("testCases.txt");
+	Scanner Key = new Scanner(testFile);
+	//Scanner Key = new Scanner(System.in);
 
 	PrintWriter output = new PrintWriter("myoutput.txt");
 	//PrintWriter output = new PrintWriter(System.out);
@@ -27,7 +27,7 @@ public class Main {
 
 	printAccts(myAcct, Key, output);
 	
-	//TransactionTicket type = new TransactionTicket();
+	TransactionTicket transTicket = new TransactionTicket();
 
 	do {
 		menu();
@@ -50,12 +50,11 @@ public class Main {
 			break;
 		case 'd':
 		case 'D':
-			deposit(myAcct, Key, output);
-			//type = new TransactionTicket("Deposit");
+			deposit(myAcct, Key, output,transTicket);
 			break;
 		case 'w':
 		case 'W':
-			withdraw(myAcct, Key, output);
+			withdraw(myAcct, Key, output,transTicket);
 			//type = new TransactionTicket("Withdrawal");
 			break;
 		case 'c':
@@ -197,195 +196,163 @@ public class Main {
 		output.flush();
 	}
 	
-	public static void deposit(Bank myAcct,Scanner key,PrintWriter output) throws ParseException {
-		
-		Account accInfo = new Account();
-		TransactionReceipt info = new TransactionReceipt();
-		TransactionTicket date = new TransactionTicket();
-		Calendar transactionDate = Calendar.getInstance();
-		
+	public static void deposit(Bank myAcct,Scanner key,PrintWriter output,TransactionTicket ticket) throws ParseException {
+
+		Account customerAcct = new Account();
+		Calendar currentDate = Calendar.getInstance();
+
 		int requestedAccount;
 		int index;
 		// prompt for account number
 		System.out.print("Enter the account number: ");
 		requestedAccount = key.nextInt(); // read-in the account number
-
 		// call findAcct to search if requestedAccount exists
 		index = myAcct.findAcct(requestedAccount);
-		
-		if (index == -1) // invalid account
-		{
-			transactionDate = Calendar.getInstance();
-			date = new TransactionTicket(transactionDate, "Deposit");
-			info = accInfo.getBalance(date, myAcct, accInfo, index, false);
-			
-			output.println("Transaction Requested: " + date.getTransactionType());
+
+		if(index == -1){
+			currentDate = Calendar.getInstance();
+			ticket = new TransactionTicket(currentDate, "Deposit");
+			TransactionReceipt info = new TransactionReceipt(ticket,false,"Account is not found.");
+
+			output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
 			output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
 			output.println("Error: " + info.getTransactionFailureReason());
 			output.println();
-		} 
-		else // Valid account
-		{
-			accInfo = myAcct.getAccts(index);
-			String accType = accInfo.getAccType();		// get the Account type
+		}else{
+			customerAcct = myAcct.getAccts(index);
+			String accType = customerAcct.getAccType();
 
-			double amountToDeposit;						// Amount to deposit
 			System.out.print("Enter amount to deposit: ");
-			amountToDeposit = key.nextDouble();
+			double amountToDeposit = key.nextDouble();
 
 			if(accType.equals("CD")){
-				Calendar tdyDate = Calendar.getInstance();
 
-				Check dateCon = new Check();
+				System.out.print("Enter CD term: ");
+				int amountOfTerm = key.nextInt();
 
-				System.out.print("Enter account opening date: ");
-				String openDate = key.next();
+				System.out.print("Enter maturity date: ");
+				String dateOfMature = key.next();
 
-				System.out.print("Enter cd term: ");
-				int termOfCD = key.nextInt();
+				currentDate = Calendar.getInstance();
+				ticket = new TransactionTicket(currentDate,"Deposit",amountToDeposit,amountOfTerm);
+				TransactionReceipt depReceipt = customerAcct.makeDepositCD(ticket,myAcct,index,dateOfMature);
 
-				// Convert String date to Calendar
-				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-				Date oDate = sdf.parse(openDate);
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(oDate);
-				cal.add(Calendar.MONTH,termOfCD);
-
-				if(cal.before(tdyDate) || cal.equals(tdyDate)){ // Account out of term
-					if (amountToDeposit <= 0.00) { // invalid amount to deposit
-
-						transactionDate = Calendar.getInstance();
-						date = new TransactionTicket(transactionDate,"Deposit");
-						info = accInfo.makeDeposit(date,myAcct,accInfo,index,false,amountToDeposit);
-
-						output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
-						output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
-						output.println("Account type: " + accType);
-						output.println("Account Number: " + requestedAccount);
-						output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
-						output.printf("Amount to Deposit: $%.2f\n", amountToDeposit);
-						output.printf("Error: $%.2f\n is an invalid amount", amountToDeposit);
-						output.println();
-					} else { // Valid amount to deposit
-						transactionDate = Calendar.getInstance();
-						date = new TransactionTicket(transactionDate,"Deposit");
-						info = accInfo.makeDeposit(date,myAcct,accInfo,index,true,amountToDeposit);
-
-						output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
-						output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
-						output.println("Account type: " + accType);
-						output.println("Account Number: " + requestedAccount);
-						output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
-						output.printf("Amount to Deposit: $%.2f\n", amountToDeposit);
-						output.printf("New Balance: $%.2f\n", info.getPostTransactionBalance());
-						output.println();
-					}
-				}else{ // account still in term
-					transactionDate = Calendar.getInstance();
-					date = new TransactionTicket(transactionDate,"Deposit",termOfCD);
-					info = new TransactionReceipt(date,false,"Term hasn't finished",openDate);
-
-					output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
-					output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
-					output.println("Account type: " + accType);
+				if(depReceipt.getTransactionSuccessIndicatorFlag()){
+					output.println("Transaction Requested: " + depReceipt.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + depReceipt.getTransactionTicket().getDateOfTransaction().getTime());
 					output.println("Account Number: " + requestedAccount);
-					output.printf("Error: " +  info.getTransactionFailureReason());
+					output.printf("Previous Balance: $%.2f\n" , depReceipt.getPreTransactionBalance());
+					output.printf("Amount to deposit: $%.2f\n", depReceipt.getTransactionTicket().getTransactionAmount());
+					output.printf("Current Balance: $%.2f\n", depReceipt.getPostTransactionBalance());
+					output.println("New maturity date: " + depReceipt.getPostTransactionMaturityDate().getTime());
+					output.println();
+				}else{
+					output.println("Transaction Requested: " + depReceipt.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + depReceipt.getTransactionTicket().getDateOfTransaction().getTime());
+					output.println("Error: " + depReceipt.getTransactionFailureReason());
 					output.println();
 				}
-			}else{ // if not CD
-				if (amountToDeposit <= 0.00) { // invalid amount to deposit
+			}else{
+				currentDate = Calendar.getInstance();
+				ticket = new TransactionTicket(currentDate,"Deposit",amountToDeposit);
+				TransactionReceipt depReceipt = customerAcct.makeDeposit(ticket,myAcct,index);
 
-					transactionDate = Calendar.getInstance();
-					date = new TransactionTicket(transactionDate,"Deposit");
-					info = accInfo.makeDeposit(date,myAcct,accInfo,index,false,amountToDeposit);
-
-					output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
-					output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
-					output.println("Account type: " + accType);
+				if(depReceipt.getTransactionSuccessIndicatorFlag()) {
+					output.println("Transaction Requested: " + depReceipt.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + depReceipt.getTransactionTicket().getDateOfTransaction().getTime());
 					output.println("Account Number: " + requestedAccount);
-					output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
-					output.printf("Amount to Deposit: $%.2f\n", amountToDeposit);
-					output.printf("Error: $%.2f is an invalid amount\n", amountToDeposit);
+					output.printf("Previous Balance: $%.2f\n" , depReceipt.getPreTransactionBalance());
+					output.printf("Current Balance: $%.2f\n" , depReceipt.getPostTransactionBalance());
 					output.println();
-				} else {
-					transactionDate = Calendar.getInstance();
-					date = new TransactionTicket(transactionDate,"Deposit");
-					info = accInfo.makeDeposit(date,myAcct,accInfo,index,true,amountToDeposit);
-
-					output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
-					output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
-					output.println("Account type: " + accType);
-					output.println("Account Number: " + requestedAccount);
-					output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
-					output.printf("Amount to Deposit: $%.2f\n", amountToDeposit);
-					output.printf("New Balance: $%.2f\n", info.getPostTransactionBalance());
+				}else{
+					output.println("Transaction Requested: " + depReceipt.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + depReceipt.getTransactionTicket().getDateOfTransaction().getTime());
+					output.println("Error: " + depReceipt.getTransactionFailureReason());
 					output.println();
 				}
 			}
-
 		}
 		output.flush();
 	}
 	
-	public static void withdraw(Bank myAcct,Scanner key,PrintWriter output) {
-		Account accInfo = new Account();
-		TransactionReceipt info = new TransactionReceipt();
-		TransactionTicket date = new TransactionTicket();
-		Calendar transactionDate = Calendar.getInstance();
-		
+	public static void withdraw(Bank myAcct,Scanner key,PrintWriter output,TransactionTicket ticket) throws ParseException {
+		Account customerAcct = new Account();
+		Calendar currentDate = Calendar.getInstance();
+
 		int requestedAccount;
 		int index;
 		// prompt for account number
 		System.out.print("Enter the account number: ");
 		requestedAccount = key.nextInt(); // read-in the account number
 
+		System.out.print("Enter amount to deposit: ");
+		double amountToDeposit = key.nextDouble();
+
 		// call findAcct to search if requestedAccount exists
 		index = myAcct.findAcct(requestedAccount);
-	
-		if(index == -1) // Account doesnt exist
-		{
-			transactionDate = Calendar.getInstance();
-			date = new TransactionTicket(transactionDate, "Withdraw");
-			info = accInfo.getBalance(date, myAcct, accInfo, index, false);
-			
-			output.println("Transaction Requested: " + date.getTransactionType());
+
+		if (index == 1) {
+			currentDate = Calendar.getInstance();
+			ticket = new TransactionTicket(currentDate, "Withdrawal");
+			TransactionReceipt info = new TransactionReceipt(ticket, false, "Account is not found.");
+
+			output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
 			output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
 			output.println("Error: " + info.getTransactionFailureReason());
 			output.println();
-		}
-		else 
-		{
-			double amountToWithdraw;
-			System.out.print("Enter amount to withdraw: ");
-			amountToWithdraw = key.nextDouble();
-			
-			date = new TransactionTicket(transactionDate, "Withdraw");
-			info = accInfo.makeWithdrawal(date, myAcct, accInfo, index, amountToWithdraw);
-			 
-			if(info.getTransactionSuccessIndicatorFlag()) 
-			{
-				output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
-				output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
-				output.println("Account requested: " + requestedAccount);
-				output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
-				output.printf("Amount to Withdraw: $%.2f\n", amountToWithdraw);
-				output.printf("New Balance: $%.2f\n", info.getPostTransactionBalance());
-				output.println();
+		}else{
+			customerAcct = myAcct.getAccts(index);
+			String accType = customerAcct.getAccType();
+			if(accType.equals("CD")) {
+
+				System.out.print("Enter new CD term, Choose from 6, 12, 18, or 24 months: ");
+				int amountOfTerm = key.nextInt();
+
+				System.out.print("Enter maturity date: ");
+				String dateOfMature = key.next();
+
+				currentDate = Calendar.getInstance();
+				ticket = new TransactionTicket(currentDate, "Withdrawal", amountToDeposit, amountOfTerm);
+				TransactionReceipt depReceipt = customerAcct.makeWithdrawalCD(ticket, myAcct, index, dateOfMature);
+
+				if(depReceipt.getTransactionSuccessIndicatorFlag()) {
+					output.println("Transaction Requested: " + depReceipt.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + depReceipt.getTransactionTicket().getDateOfTransaction().getTime());
+					output.println("Account Number: " + requestedAccount);
+					output.printf("Previous Balance: $%.2f\n", depReceipt.getPreTransactionBalance());
+					output.printf("Current Balance: $%.2f\n", depReceipt.getPostTransactionBalance());
+					output.println("New maturity date: " + depReceipt.getPostTransactionMaturityDate().getTime());
+					output.println();
+				}else{
+					output.println("Transaction Requested: " + depReceipt.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + depReceipt.getTransactionTicket().getDateOfTransaction().getTime());
+					output.println("Error: " + depReceipt.getTransactionFailureReason());
+					output.println();
+				}
 			}
-			else
-			{
-				output.println("Transaction Requested: " + info.getTransactionTicket().getTransactionType());
-				output.println("Date of Transaction: " + info.getTransactionTicket().getDateOfTransaction().getTime());
-				output.println("Account requested: " + requestedAccount);
-				output.printf("Old Balance: $%.2f\n", info.getPreTransactionBalance());
-				output.printf("Amount to Withdraw: $%.2f\n", amountToWithdraw);
-				output.println("Error: " + info.getTransactionFailureReason());
-				output.println();
+			else{
+				currentDate = Calendar.getInstance();
+				ticket = new TransactionTicket(currentDate,"Withdrawal",amountToDeposit);
+				TransactionReceipt depReceipt = customerAcct.makeWithdrawal(ticket, myAcct, index);
+
+				if(depReceipt.getTransactionSuccessIndicatorFlag()) {
+					output.println("Transaction Requested: " + depReceipt.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + depReceipt.getTransactionTicket().getDateOfTransaction().getTime());
+					output.println("Account Number: " + requestedAccount);
+					output.printf("Previous Balance: $%.2f\n", depReceipt.getPreTransactionBalance());
+					output.printf("Current Balance: $%.2f\n", depReceipt.getPostTransactionBalance());
+					output.println();
+				}else{
+					output.println("Transaction Requested: " + depReceipt.getTransactionTicket().getTransactionType());
+					output.println("Date of Transaction: " + depReceipt.getTransactionTicket().getDateOfTransaction().getTime());
+					output.println("Error: " + depReceipt.getTransactionFailureReason());
+					output.println();
+				}
 			}
 		}
 		output.flush();
 	}
-	
+
 	public static void clearCheck(Bank myAcct, Scanner key, PrintWriter output) throws ParseException {
 
 		Account accInfo = new Account();
@@ -444,12 +411,9 @@ public class Main {
 					output.println("Transaction Requested: " + newTicket.getTransactionType());
 					output.println("Date of Transaction: " + receiptInfo.getTransactionTicket().getDateOfTransaction().getTime());
 					output.println("Account type: " + accountType);
-					output.println("Check date: " + checkInfo.getDate().getTime());
 					output.println("Error: " + receiptInfo.getTransactionFailureReason());
 					output.println();
 				}
-
-
 			}
 			else 
 			{
@@ -464,7 +428,6 @@ public class Main {
 				output.println("Account type: " + accountType);
 				output.println("Error: " + receiptInfo.getTransactionFailureReason());
 				output.println();
-				
 			}
 		}
 		output.flush();
